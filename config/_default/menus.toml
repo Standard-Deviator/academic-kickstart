@@ -13,14 +13,14 @@
   url = "/post/"
   weight = 20
 
-#[[main]]
-#  name = "Projects"
-#  url = "#projects"
-#  weight = 30
+[[main]]
+  name = "Workshops"
+  url = "/categories/workshop/"
+  weight = 30
 
 [[main]]
   name = "Publications"
-  url = "#featured"
+  url = "/publication/"
   weight = 40
 
 [[main]]

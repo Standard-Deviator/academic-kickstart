@@ -29,7 +29,7 @@ education:
   courses:
   - course: PhD candidate in Psychology specializing in quantitative methods
     institution: York University
-    year: 2019-Current
+    year: 2017-Current
   - course: MA in Psychology specializing in quantitative methods
     institution: York University
     year: 2017

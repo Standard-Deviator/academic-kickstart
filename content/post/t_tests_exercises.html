@@ -1,0 +1,258 @@
+---
+author: "Mark Christopher Adkins"
+date: 'Created: 2020-09-12  Last Modified:  2020-09-29'
+title: 'T-Tests'
+output:
+  html_document:
+    toc_float: true
+    number_sections: FALSE
+    toc: true
+    self_contained: true
+    css: "scripts/style.css"
+---
+
+<script src="/rmarkdown-libs/clipboard/clipboard.min.js"></script>
+<link href="/rmarkdown-libs/primer-tooltips/build.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/klippy/css/klippy.min.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/klippy/js/klippy.min.js"></script>
+
+
+<script>
+  addClassKlippyTo("pre.r, pre.markdown");
+  addKlippy('right', 'top', 'auto', '1', 'Copy code', 'Copied!');
+</script>
+<div id="independent-samples-t-test" class="section level1">
+<h1>Independent Samples T-Test</h1>
+<p>This set of exercises will demonstrate how to verify that the assumptions have been met prior to conducting an independent sample t-test.</p>
+<p>To begin, let’s load the libraries which will give us access to the functions we will need today.</p>
+<div id="load-libraries" class="section level2">
+<h2>Load Libraries</h2>
+<pre class="r"><code># Exercises: practice running independent/dependent t-tests
+
+library(pwr)       # power/sample size calcs
+library(car)       # leveneTest()
+library(psych)     # describeBy()
+library(tidyverse) 
+library(effsize)   # cohen.d()</code></pre>
+<div class="fyi">
+<p>If you have trouble installing the tidyverse package, you can install/load the individual packages that we need.</p>
+<pre class="r"><code>library(readr)   # parse_factor()
+library(dplyr)   # for easier subsetting and
+# data manipulation
+library(forcats) # create/mutate factors easier
+library(ggplot2) # graphics</code></pre>
+</div>
+</div>
+<div id="createimport-data" class="section level2">
+<h2>Create/Import Data</h2>
+<p>The next step is to either load some data into R or create some data ourselves. For the exercises within this lab, we will create some data.</p>
+<pre class="r"><code># create a vector which holds our outcome/dependent variable
+# - 16 scores for each group so 16 x 2 = 32 scores
+recall &lt;- c(4,5,2,4,6,7,6,6,2,5,4,3,3,3,5,3,
+            5,2,4,2,2,3,1,5,3,2,3,3,4,1,5,3)
+
+# create a vector which holds our grouping variable (sometimes called a predictor or factor)
+# - 16 subjects per group
+group &lt;- c(rep(1,16),
+           rep(2,16))
+
+# combine the two vectors into a data.frame
+humour &lt;- data.frame(recall,group)</code></pre>
+<p>Now let’s take a peek at our data.</p>
+<pre class="r"><code># print the data to the console
+humour</code></pre>
+<pre><code>##    recall group
+## 1       4     1
+## 2       5     1
+## 3       2     1
+## 4       4     1
+## 5       6     1
+## 6       7     1
+## 7       6     1
+## 8       6     1
+## 9       2     1
+## 10      5     1
+## 11      4     1
+## 12      3     1
+## 13      3     1
+## 14      3     1
+## 15      5     1
+## 16      3     1
+## 17      5     2
+## 18      2     2
+## 19      4     2
+## 20      2     2
+## 21      2     2
+## 22      3     2
+## 23      1     2
+## 24      5     2
+## 25      3     2
+## 26      2     2
+## 27      3     2
+## 28      3     2
+## 29      4     2
+## 30      1     2
+## 31      5     2
+## 32      3     2</code></pre>
+<div class="fyi">
+<p>We can take a peek at the data using the <code>View()</code> function (Note: <code>View()</code> has a capital “V”).</p>
+<pre class="r"><code># type this into the console pane to see the dataset as a spreadsheet within RStudio
+View(humour)</code></pre>
+</div>
+</div>
+<div id="clean-up-the-data" class="section level2 tabset tabset-fade tabset-pills">
+<h2>Clean Up the Data</h2>
+<p>Prior to conducting the t-test, we first need to clean up and prepare our data.</p>
+<p>One place to start is the variable we created called <em>group.</em> Right now, it only has two unique values which designate the group to which each subject belongs.</p>
+<pre class="r"><code>unique(humour$group)</code></pre>
+<pre><code>## [1] 1 2</code></pre>
+<div class="fyi">
+<p>If you want to pull a single vector from a data.frame/tibble, you can use the subsetting operator <code>$</code>. This can often be useful when a function you are using requires a single vector and not your whole dataset.</p>
+<p>You begin by writing the name of the data.frame/tibble, and you follow it by the <code>$</code> operator, and then the name of the vector you need.</p>
+<pre class="r"><code># extract a the age variable
+humour$age</code></pre>
+</div>
+<p>But the values 1 and 2 aren’t very descriptive. Our next step is to convert this vector of 1’s and 2’s into a factor, and we should also recode the first level of the factor to “Humourous” and the second level to “Non-humourous”.</p>
+<div class="note">
+<p>When converting a integer vector into a factor, it is usually necessary to first convert it to a character vector (e.g., the value 1 becomes the character “1”)</p>
+</div>
+<div id="puzzle" class="section level3">
+<h3>Puzzle</h3>
+<div class="puzzle">
+<p>Try to fill in the code to convert the <code>group</code> variable into a factor and change the levels of this factor to have more descriptive names.</p>
+<pre class="r"><code># convert group to a factor,
+# and give the levels better names
+humour &lt;- mutate(humour,
+                 group = &lt;YOUR CODE HERE&gt;)</code></pre>
+</div>
+</div>
+<div id="show-solution" class="section level3">
+<h3>Show Solution</h3>
+<div class="puzzle">
+<pre class="r"><code># convert group to a factor,
+# and give the levels better names
+humour &lt;- mutate(humour,
+            group = as.character(group),
+            group = fct_recode(group,
+                        &quot;Humourous&quot; = &quot;1&quot;,
+                        &quot;Non-humourous&quot; = &quot;2&quot;))</code></pre>
+</div>
+</div>
+</div>
+<div id="power" class="section level2">
+<h2>Power</h2>
+<p>To conduct a power analysis, we will use a function from the <em>pwr</em> package. We specify the sample size (<em>n</em>), the significance level (<em>sig.level</em>), and the effect size (<em>d</em>) we want to be able to detect.</p>
+<pre class="r"><code># conduct the the power of the test to detect an effect size of d = .2
+pwr.t.test(n = 16,
+           sig.level = .05,
+           d = .2)</code></pre>
+<pre><code>## 
+##      Two-sample t test power calculation 
+## 
+##               n = 16
+##               d = 0.2
+##       sig.level = 0.05
+##           power = 0.08502308
+##     alternative = two.sided
+## 
+## NOTE: n is number in *each* group</code></pre>
+</div>
+<div id="check-assumptions" class="section level2">
+<h2>Check Assumptions</h2>
+<div id="normality-in-each-group" class="section level3">
+<h3>Normality in <strong>Each</strong> Group</h3>
+<div id="qq-plots" class="section level4">
+<h4>QQ-Plots</h4>
+<pre class="r"><code># assess normality using a qqplot
+# - for qqplot you need to use an aesthetic called &quot;sample&quot;
+ggplot(humour, aes(sample = recall)) +
+    geom_qq() +
+    geom_qq_line() +
+    facet_grid(~group)</code></pre>
+<p><img src="/post/t_tests_exercises_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+<div id="box-plots" class="section level4">
+<h4>Box Plots</h4>
+<pre class="r"><code># create a box plot to show &quot;recall&quot; distribution for each group
+ggplot(humour, aes(x = group, y = recall)) +
+    geom_boxplot()</code></pre>
+<p><img src="/post/t_tests_exercises_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+</div>
+<div id="using-descriptive-statistics" class="section level4">
+<h4>Using Descriptive Statistics</h4>
+<p>In past exercises, we have used the <code>describe()</code> function to compute descriptive statistics. Today, we will use a related function from the <em>psych</em> package called <code>describeBy()</code> (note the capital “B”). This will break your data set into groups, and compute descriptive statistics separately for each group.</p>
+<pre class="r"><code># assess normality using descriptive statistics
+
+describeBy(x = humour$recall,
+           group = humour$group,
+           digits = 3,
+           mat = TRUE)</code></pre>
+<pre><code>##     item        group1 vars  n mean    sd median trimmed   mad min max range
+## X11    1     Humourous    1 16 4.25 1.528      4   4.214 1.483   2   7     5
+## X12    2 Non-humourous    1 16 3.00 1.317      3   3.000 1.483   1   5     4
+##      skew kurtosis    se
+## X11 0.132   -1.309 0.382
+## X12 0.164   -1.211 0.329</code></pre>
+</div>
+</div>
+<div id="homogeneity-of-variance" class="section level3">
+<h3>Homogeneity of Variance</h3>
+<pre class="r"><code># assess homogeneity of variance using leveneTest() function
+leveneTest(y = humour$recall,
+           group = humour$group,
+           center = &quot;mean&quot;)</code></pre>
+<pre><code>## Levene&#39;s Test for Homogeneity of Variance (center = &quot;mean&quot;)
+##       Df F value Pr(&gt;F)
+## group  1  1.0133 0.3222
+##       30</code></pre>
+<pre class="r"><code># Using formula notation
+leveneTest(y = recall~group,
+           data = humour,
+           center=&quot;mean&quot;)</code></pre>
+<pre><code>## Levene&#39;s Test for Homogeneity of Variance (center = &quot;mean&quot;)
+##       Df F value Pr(&gt;F)
+## group  1  1.0133 0.3222
+##       30</code></pre>
+</div>
+</div>
+<div id="effect-size" class="section level2">
+<h2>Effect Size</h2>
+<pre class="r"><code># Conduct test and find effect size ---------------------------------------
+
+# compute Cohen&#39;s d
+cohen.d(d = humour$recall,
+        f = humour$group)</code></pre>
+<pre><code>## 
+## Cohen&#39;s d
+## 
+## d estimate: 0.8766086 (large)
+## 95 percent confidence interval:
+##     lower     upper 
+## 0.1206728 1.6325444</code></pre>
+</div>
+<div id="conduct-independent-samples-t-test" class="section level2">
+<h2>Conduct Independent Samples t-test</h2>
+<pre class="r"><code># conduct independent-samples t-test
+t.test(formula = recall ~ group,
+       data = humour)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  recall by group
+## t = 2.4794, df = 29.361, p-value = 0.01914
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  0.2194488 2.2805512
+## sample estimates:
+##     mean in group Humourous mean in group Non-humourous 
+##                        4.25                        3.00</code></pre>
+</div>
+</div>
+<div id="acknowledgements" class="section level1">
+<h1>Acknowledgements</h1>
+<ul>
+<li>The lovely “DIV TIPS” were made using code from a fantastic blog entry by Desirée de leon at <a href="https://desiree.rbind.io/post/2019/making-tip-boxes-with-bookdown-and-rmarkdown/">https://desiree.rbind.io/post/2019/making-tip-boxes-with-bookdown-and-rmarkdown/</a></li>
+<li>The copy to clipboard buttons were created using Klippy <a href="https://rlesur.github.io/klippy/reference/klippy.html">https://rlesur.github.io/klippy/reference/klippy.html</a></li>
+</ul>
+<p><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.</p>
+</div>
