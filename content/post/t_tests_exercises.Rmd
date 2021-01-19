@@ -8,7 +8,7 @@ output:
     number_sections: FALSE
     toc: true
     self_contained: true
-    css: "scripts/style.css"
+css: "../assets/scss/custom.scss"
 ---
 
 ```{r setup, include=FALSE}

@@ -1,3 +1,4 @@
+theme = "wowchemy-hugo-modules"
 # Configuration of Academic
 # Documentation: https://sourcethemes.com/academic/
 #
@@ -31,7 +32,7 @@ removePathAccents = true  # Workaround for https://github.com/gohugoio/hugo/issu
 paginate = 10  # Number of items per page in paginated lists.
 enableEmoji = true
 footnotereturnlinkcontents = "<sup>^</sup>"
-ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+ignoreFiles = ["\\.ipynb$", ".ipynb_checkpoints$", "\\.Rmd$", "\\.Rmarkdown$", "_cache$","\\.knit\\.md$", "\\.utf8\\.md$"]
 
 # Change blog post to be stored by date, rather than title (in case it changes)
 [permalinks]
